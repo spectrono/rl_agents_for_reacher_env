@@ -1,0 +1,16 @@
+# Ignore Python bytecode files
+__pycache__/
+*.py[cod]
+
+# Ignore virtual environment directories
+venv/
+env/
+.env/
+
+# Ignore other common files
+*.egg-info/
+*.egg
+.DS_Store
+.vscode/
+unity-environment.log
+
