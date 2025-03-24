@@ -12,5 +12,7 @@ env/
 *.egg
 .DS_Store
 .vscode/
+Reacher_Linux_NoVis/
+Reacher_Linux_single_arm/
 unity-environment.log
 
