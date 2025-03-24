@@ -4,7 +4,7 @@ This project aims to solve the so called Reacher environment with a single arm v
 
 ## Reacher environment
 
-The environemnt realizes a double-jointed arm which can be moved to a target's location by executing actions in this environment. Each action is a vector with four values, corresponding to torque applicable to two joints. Every entry in the action vector must be a number between -1 and +1. The target location is a sphere which moves within the robot arm's reach. The environment's observation space consists of 33 variables corresponding to position, rotation, velocity, and angular velocities of the robot arm.
+The environment realizes a double-jointed arm which can be moved to a target's location by executing actions in this environment. Each action is a vector with four values, corresponding to torque applicable to two joints. Every entry in the action vector must be a number between -1 and +1. The target location is a sphere which moves within the robot arm's reach. The environment's observation space consists of 33 variables corresponding to position, rotation, velocity, and angular velocities of the robot arm.
 
 A reward of +0.1 is provided for each step that the agent's hand is in the target location. Thus, the RL-agent's goal is to maintain its position at the target location for as many time steps as possible.
 
