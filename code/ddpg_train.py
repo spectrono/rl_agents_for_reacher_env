@@ -255,7 +255,7 @@ def main():
         check_performance_every=check_performance_every,
         result_directory_path=result_directory_path,
         score_window_size=100,
-        target_score=35.0)
+        target_score=30.0)
 
     # Plot the scores
     plot_scores(scores, result_directory_path, pure_data_collection_episodes_nb, show_plot=True)

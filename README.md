@@ -4,7 +4,7 @@ This project aims to solve the so called Reacher environment with a single arm, 
 
 ## Reacher environment
 
-The environemnt realizes a double-jointed arm which can be move to target locations by executing actions in this environment. Each action is a vector with four values, corresponding to torque applicable to two joints. Every entry in the action vector must be a number between -1 and +1. The target location is a sphere which moves within the robot arm's reach. Ther environment's observation space consists of 33 variables corresponding to position, rotation, velocity, and angular velocities of the robot arm.
+The environemnt realizes a double-jointed arm which can be move to a target's locations by executing actions in this environment. Each action is a vector with four values, corresponding to torque applicable to two joints. Every entry in the action vector must be a number between -1 and +1. The target location is a sphere which moves within the robot arm's reach. Ther environment's observation space consists of 33 variables corresponding to position, rotation, velocity, and angular velocities of the robot arm.
 
 A reward of +0.1 is provided for each step that the agent's hand is in the target location. Thus, the RL-agent's goal is to maintain its position at the target location for as many time steps as possible.
 
@@ -31,6 +31,6 @@ Additionally, download the single arm reacher environment from this location: [H
 
 All code is provided within the **code/** folder. The main training file is the **ddpg_train.py** file which setups and trains the agent. It contains a set of hyperparameters which have been successfuly used to solve the reacher environment. Just call
 `python code/ddpg_train.py`
-and it will execute the training with the preselected hyperparameter. Results like achieved scores and the agent's network weights will be placed in the **results/** folder.
+and it will execute the training with the preselected hyperparameter. Results, like the achieved scores and the agent's network weights, will be placed in the **results/** folder.
 
-Feel free to modify the hyperparameter to see if you can reach an even better performance. For details on the training results and used hyperparameter see the REPORT.md file.
+Feel free to modify the hyperparameter to see if you can reach an even better performance. For details on the training results and the used hyperparameter see the [REPORT.md](./REPORT.md) file.
