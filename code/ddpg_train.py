@@ -1,4 +1,3 @@
-from cProfile import label
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,7 +8,6 @@ from time import time
 from datetime import timedelta
 from ddpg_agent import DDPGAgent
 from pathlib import Path
-from os import makedirs
 from os.path import join
 
 
@@ -19,7 +17,11 @@ def plot_scores(scores, result_directory_path, nb_of_episodes_for_pure_data_coll
     
     Args:
         scores (list): List of scores
+        result_directory_path(Path): Where to save the figure
+        nb_of_episodes_for_pure_data_collection (int): Draws a vertical line to show up to which timestep only data was collected and nor learning happend
+        episode_count(int): Number of episoded
         title (str): Title for the plot
+        show_plot (bool): If false, the figure is saved to disk, only
     """
     fig = plt.figure(figsize=(10, 6))
     ax = fig.add_subplot(111)
@@ -58,7 +60,16 @@ def plot_scores(scores, result_directory_path, nb_of_episodes_for_pure_data_coll
 
 
 def check_performance(agent, env_adapter, max_steps_count, min_score_per_episode_for_success):
+    '''
+    Realizes a performance test with the agent's noise model turned off.
 
+    Useful to test if the agent is learning anything meaningful and also to estimate the influence of the noise model.
+
+    agent(DDPGAgent): The agent to test
+    env_adapter(UnityMLEnvironemtAdapter): Adapter to control the environment  
+    max_steps_count: How many time steps to test the agent
+    min_score_per_episode_for_success: Minimum desired test threshold for solving the environment
+    '''
     # Reset environment
     state = env_adapter.reset()
 
@@ -98,6 +109,25 @@ def train_ddpg_on_reacher_single_arm(
         score_window_size=100,
         target_score=30.0):
     
+    '''
+    Main call to train the DDPG agent in the single arm reacher environment.
+
+    seed(int): initialization seed 
+    device_type: cuda, cpu, ... 
+    max_episodes_count(int): Maximum number of episodes to train.
+    max_steps_count(int): Maximum number of steps per episode.
+    pure_data_collection_episodes_nb(int): Number of episodes solely used for gathering data. No training in these episodes.
+    learn_every_x_steps(int): Controlls the time steps at which a learning is executed.
+    learning_steps(int): Controlls how many learning steps are done when the learning is executed.
+    print_every(int): Controlls the frequency of training progress outputs on the console.
+    plot_every(int): Controlls the frequency of training progress plots generation.
+    save_every(int): Controlls the frequency of ddpg agent network backups to disk.
+    check_performance_every(int): Controlls the frequency of the current agent's performance with the noise model deactivated.
+    result_directory_path(Path): Folder to save results in.
+    score_window_size(int): Size of rolling mean to rate the training progress/success.
+    target_score(float): Min value of the rolling mean which has to be reached to consider the environment as solved.
+
+    '''
     # Prevent screen blinking for unshown matplot plots which are closed on plt.close()
     plt.ioff()
 
@@ -195,19 +225,21 @@ def main():
     # Setup
     result_directory_path = Path('results')
     result_directory_path.mkdir(exist_ok=True)
-
     device_type                      = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device_type}")
+
+    # Set hyperparameter
     max_episodes_count               = 10000
     max_steps_count                  = 999
     pure_data_collection_episodes_nb =  30
     learn_every_x_steps              =   5
     learning_steps                   =  10
+
+    # Set monitoring parameter
     print_every                      =  10
     plot_every                       =  25
     save_every                       =  30
     check_performance_every          =  15
-
-    print(f"Using device: {device_type}")
 
     scores = train_ddpg_on_reacher_single_arm(
         42,           # random seed

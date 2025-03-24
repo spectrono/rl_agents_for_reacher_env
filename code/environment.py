@@ -2,7 +2,19 @@ from unityagents import UnityEnvironment
 
 
 def setup_reacher_environment():
+    '''
+    Simplifies the setup of the UnityEnvironment and return only what is really needed for training.
 
+    Environment will NOT be in training mode after initialization!
+
+    Return:
+        env: The unity environment
+        brain_name(stirng): Name of the brain
+        num_agents(int): How many agents are defined
+        action_size(int): Dimension of action space
+        state_size(int): Dimension of state space
+
+    '''
     print('\n>>>>>>>>>>>>>>> Setting up environment <<<<<<<<<<<<<<<\n\n')
     env = UnityEnvironment(file_name='Reacher_Linux_NoVis/Reacher.x86')
     brain_name = env.brain_names[0]
@@ -21,8 +33,19 @@ def setup_reacher_environment():
     return env, brain_name, num_agents, action_size, state_size
 
 class UnityMLEnvironemtAdapter:
-
+    '''
+    After setup, it greatly reduces the amount of code used to interact with the environment.
+    '''
     def __init__(self, env, brain_name, agent_count):
+        '''
+        Simple initializer.
+
+        Args:
+            env: UnityMLEnvironment
+            brain_name(string): Name of the brain used in the environment
+            agent_count(int): Nuber of active agents in the environment
+        
+        '''
 
         assert(agent_count==1)
 
@@ -34,6 +57,12 @@ class UnityMLEnvironemtAdapter:
         self.state_next = None
 
     def reset(self):
+        '''
+        Resets the environment and sets it to training mode!
+
+        Return:
+            Current state/observation
+        '''
 
         env_info = self.env.reset(train_mode=True)[self.brain_name]
         self.state_current = env_info.vector_observations[0]
@@ -45,6 +74,12 @@ class UnityMLEnvironemtAdapter:
         return self.state_current
     
     def step(self, action):
+        '''
+        Applies an action to the environment and returns the observation, reward and done state(True/False)
+
+        Return:
+            tuple(observation, reward, done)
+        '''
 
         env_info = self.env.step(action)[self.brain_name]
 

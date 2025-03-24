@@ -11,7 +11,7 @@ def hidden_init(layer):
 
 
 class DDPGActor(nn.Module):
-    """Actor (Policy) Network for D4PG."""
+    """Actor (Policy) Network for DDPG."""
     
     def __init__(self, state_dim, action_dim, seed, max_action=1.0, hidden_dims=(400, 300)):
         """
@@ -69,19 +69,16 @@ class DDPGActor(nn.Module):
 
 
 class DDPGCritic(nn.Module):
-    """Distributional Critic Network for D4PG."""
+    """Critic Network for DDPG."""
     
     def __init__(self, state_dim, action_dim, seed, hidden_dims=(400, 300)):
         """
-        Initialize the Distributional Critic network.
+        Initialize the Critic network.
         
         Args:
             state_dim (int): Dimension of state space
             action_dim (int): Dimension of action space
             seed (int): Random seed
-            n_atoms (int): Number of atoms for value distribution
-            v_min (float): Minimum value for support
-            v_max (float): Maximum value for support
             hidden_dims (tuple): Dimensions of hidden layers
         """
         super(DDPGCritic, self).__init__()
@@ -102,7 +99,7 @@ class DDPGCritic(nn.Module):
 
     def forward(self, state, action):
         """
-        Forward pass to get value distribution.
+        Forward pass to get the estiamted Q-value.
         
         Args:
             state (torch.Tensor): Current state

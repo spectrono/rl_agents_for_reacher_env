@@ -7,9 +7,17 @@ from collections import deque, namedtuple
 
 class PrioritizedReplayBufferNStep:
     """
-    Like suggested in D4PG the PRB-N (prioritized replay buffer) supports N-step returns.
+    Implemenation of PRB-N (prioritized replay buffer) with support for N-step returns.
+
     The prioritization helps to more oftenly select samples which are more valuable to the training.
+
     The N-step returns can help to reduce variance in the expected returns and thus stabilizing the training.
+    The implementation uses three different deques to simplify (and speed up!) the calculation of n-step return.
+    - self.n_step_buffer_s_a_ns holds only tuples of (state, action, next_state)
+    - self.n_step_buffer_rewards holds only (rewards)
+    - self.n_step_buffer_dones holds only dones states (done)
+
+    It also uses beta annealing to control the sampling process. It favors exploration in the beginning and later on exploitation. 
     """
 
     def __init__(
@@ -35,7 +43,6 @@ class PrioritizedReplayBufferNStep:
             gamma (float): Discount factor
             alpha (float): Priority exponent parameter
             beta (float): Importance sampling exponent parameter
-            beta_increment (float): Increment for beta parameter
         """
         self.memory = []
         self.priorities = np.zeros((buffer_size,), dtype=np.float32)
