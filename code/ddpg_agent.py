@@ -3,7 +3,6 @@ import torch.optim as optim
 import numpy as np
 import random
 import copy
-import torch.functional as F
 
 from prioritized_replay_buffer import PrioritizedReplayBufferNStep
 from ddpg_architectures import DDPGActor, DDPGCritic 
@@ -13,8 +12,17 @@ WEIGHT_DECAY = 0.0001
 
 
 class DDPGAgent:
-    """DDPG agent. Expecially suitedf or continuous control tasks."""
+    """
+    DDPG agent. Especially suited for continuous control tasks.
     
+    This implementation differs in some aspected from the original DDPG implementation.
+    First, it uses a prioritized replay buffer with beta annealing to control the sampling process.
+    This favours exploration in the early training phase and exploits the collected knowledge in 
+    later stages of the training more.
+    Second, n-step returns are used to reduce the variance of the returns and speed up training convergence.
+    Third, it uses an adaptive version of the Ornstein-Uhlenbeck process. It utilizes decaying noise to
+    favor exploration in the beginning and eploitation at later stages of the training.
+    """
     def __init__(self,
                 random_seed,
                 device_type,
@@ -35,11 +43,11 @@ class DDPGAgent:
         Initialize the DDPG agent.
         
         Args:
-            device_type (str): Which backend to use (e.g. CUDA or CPU ...)
             random_seed (int): Common ramdom seed
+            device_type (str): Which backend to use (e.g. CUDA or CPU ...)
             state_dim (int): Dimension of state space
             action_dim (int): Dimension of action space
-            max_action (float): Maximum action value
+            max_action (float): Maximum action value (scales the actors output)
             hidden_dims (tuple): Dimensions of hidden layers
             lr_actor (float): Learning rate for actor
             lr_critic (float): Learning rate for critic
@@ -48,9 +56,11 @@ class DDPGAgent:
             buffer_size (int): Replay buffer size
             batch_size (int): Batch size for training
             n_step (int): Number of steps for N-step returns
+            learn_every_x_steps (int): Defines at which time steps the agent learns,
+            learning_steps(int): Defines how many learing steps are done, when the agent learns
         """
-        self.device_type = device_type
         self.random_seed = random_seed
+        self.device_type = device_type
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.max_action = max_action
@@ -80,7 +90,6 @@ class DDPGAgent:
 
         self.noise_model = AdaptiveOUNoise(self.action_dim, self.random_seed)
 
-
         self.n_steps_discount = self.gamma**self.n_steps
 
     def reset(self):
@@ -93,7 +102,7 @@ class DDPGAgent:
         
         Args:
             state: Current state
-            add_noise (bool): Whether to add noise for exploration
+            do_explore (bool): Whether to add noise for exploration or not
             
         Returns:
             Action to take, with noise (if demanded) and clipped to allowed value range
@@ -191,59 +200,6 @@ class DDPGAgent:
             # Update replay buffer priorities
             self.memory.update_priorities(indices, priorities)
 
-    # def learn(self, experiences):
-    #     """
-    #     Update actor and critic networks using given batch of experiences.
-    #     Args:
-    #     experiences: Tuple of (states, actions, rewards, next_states, dones, weights, indices)
-    #     """
-    #     states, actions, rewards, next_states, dones, weights, indices = experiences
-        
-    #     # ---------------------------- Update Critic ---------------------------- #
-    #     # Get predicted next-state actions and Q values from target models
-    #     actions_next = self.actor_target(next_states)
-    #     Q_targets_next = self.critic_target(next_states, actions_next)
-        
-    #     # Compute Q targets for current states (y_i)
-    #     Q_targets = rewards + (self.gamma * Q_targets_next * (1 - dones))
-        
-    #     # Compute critic loss (using importance sampling weights from PER)
-    #     Q_expected = self.critic_local(states, actions)
-    #     td_errors = Q_targets - Q_expected
-    #     critic_loss = (weights * torch.square(td_errors)).mean()
-        
-    #     # Minimize the loss
-    #     self.critic_optimizer.zero_grad()
-    #     critic_loss.backward()
-    #     torch.nn.utils.clip_grad_norm_(self.critic_local.parameters(), 1.0)
-    #     self.critic_optimizer.step()
-        
-    #     # ---------------------------- update actor ---------------------------- #
-    #     # Compute actor loss
-    #     actions_pred = self.actor_local(states)
-    #     actor_loss = -self.critic_local(states, actions_pred).mean()
-        
-    #     # Minimize the loss
-    #     self.actor_optimizer.zero_grad()
-    #     actor_loss.backward()
-    #     torch.nn.utils.clip_grad_norm_(self.actor_local.parameters(), 1.0)
-    #     self.actor_optimizer.step()
-        
-    #     # ----------------------- update target networks ----------------------- #
-    #     self._soft_update(self.critic_local, self.critic_target, self.tau)
-    #     self._soft_update(self.actor_local, self.actor_target, self.tau)
-        
-    #     # Update priorities in replay buffer
-    #     with torch.no_grad():
-    #         # Calculate absolute TD errors for priorities (already computed above)
-    #         td_errors_abs = torch.abs(td_errors).detach().cpu().numpy().flatten()
-            
-    #         # Add small constant to avoid zero priority
-    #         priorities = td_errors_abs + 1e-5
-            
-    #         # Update replay buffer priorities
-    #         self.memory.update_priorities(indices, priorities)
-    
     def reset(self):
         self.episode_counter += 1
         if self.noise_model:
